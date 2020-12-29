@@ -104,6 +104,7 @@ public class PersistenceManager {
             }
         } catch (SQLException ex) { ex.printStackTrace();  }
 
+        System.out.println("popo");
         return result;
     }
 
