@@ -90,6 +90,7 @@ public class PersistenceManager {
         return result;
     }
 
+
     public static int executeUpdate(String update) {
         int result = 0;
         try (Connection conn = DriverManager.getConnection(url, username, password);
@@ -106,8 +107,8 @@ public class PersistenceManager {
         return result;
     }
 
+
     public static int getLastId() {
         return lastId;
     }
-
 }
