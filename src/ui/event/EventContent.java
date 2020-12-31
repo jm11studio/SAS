@@ -216,7 +216,6 @@ public class EventContent {
             DefinitionTaskBox.setVisible(true);
 
             if (newValue != null && newValue != oldValue) {
-
                 IDLabel.setText( "ID: " + newValue.getID() );
                 if ( newValue.getName().isEmpty() ) NameTextField.setPromptText("null");
                 else NameTextField.setPromptText(newValue.getName());
@@ -249,10 +248,8 @@ public class EventContent {
                 if (SHMenuButton.getText() == null) SHMenuButton.setText(toSelectString);
 
                 deleteButton.setDisable(false);
-            } else if (newValue == null) {
 
-                deleteButton.setDisable(true);
-            }
+            } else if (newValue == null) { deleteButton.setDisable(true); }
 
         });
     }
