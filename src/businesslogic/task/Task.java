@@ -104,8 +104,6 @@ public class Task {
 
         });
 
-        System.out.println("test t[0].getName: " + t.getName() );
-
         return t;
     }
 

@@ -17,6 +17,7 @@ public class PersistenceManager {
         input = input.replace("\t", "\\t");
         return input;
     }
+
     public static void testSQLConnection() {
         try (Connection conn = DriverManager.getConnection(url, username, password);
              PreparedStatement ps = conn.prepareStatement("SELECT * FROM Users");
@@ -32,15 +33,12 @@ public class PersistenceManager {
 
 
 
-
     public static void executeQuery(String query, ResultHandler handler) {
         try (Connection conn = DriverManager.getConnection(url, username, password);
             PreparedStatement ps = conn.prepareStatement(query);
             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) { handler.handle(rs); }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        } catch (SQLException ex) { ex.printStackTrace(); }
     }
 
     public static void executeQueryK(String query, ResultHandlerK handler) {
@@ -48,21 +46,24 @@ public class PersistenceManager {
             PreparedStatement ps = conn.prepareStatement(query);
             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) { handler.handle(rs); }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        } catch (SQLException ex) { ex.printStackTrace(); }
     }
 
-    public static void executeQueryE(String query, ResultHandlerEvent handler) {
+    public static void executeQueryE(String query, ResultHandlerE handler) {
         try (Connection conn = DriverManager.getConnection(url, username, password);
              PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) { handler.handle(rs); }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        } catch (SQLException ex) { ex.printStackTrace(); }
     }
 
+    public static void executeQueryS(String query, ResultHandlerS handler) {
+        try (Connection conn = DriverManager.getConnection(url, username, password);
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) { handler.handle(rs); }
+        } catch (SQLException ex) { ex.printStackTrace(); }
+    }
 
 
 
@@ -104,7 +105,6 @@ public class PersistenceManager {
             }
         } catch (SQLException ex) { ex.printStackTrace();  }
 
-        System.out.println("popo");
         return result;
     }
 

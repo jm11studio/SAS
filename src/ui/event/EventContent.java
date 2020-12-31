@@ -3,6 +3,7 @@ package ui.event;
 import businesslogic.CatERing;
 import businesslogic.event.Event;
 import businesslogic.event.EventThrowException;
+import businesslogic.service.Service;
 import businesslogic.user.User;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -15,21 +16,31 @@ import ui.Main;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 public class EventContent {
     public VBox DefinitionTaskBox;
     public Label IDLabel;
     public Button SaveTaskChanges;
-    public TextField ServiceIDTextField;
     public TextField PublicatedTextField;
     public TextField TERTextField;
-    public TextField SHTextField;
     public TextField DateTextField;
+    public TextField End_HourTextField;
+    public TextField Start_HourTextField;
     public TextField DescriptionTextField;
     public TextField NameTextField;
     public Button deleteButton;
+    public MenuButton SHMenuButton;
+    public MenuButton ServiceMenuButton;
+
+
+    HashMap<String, Integer> ServicesList = new HashMap<>();
+    HashMap<String, Integer> SHList = new HashMap<>();
+
+    private final String toSelectString = "To select: ";
 
 
     @FXML
@@ -42,6 +53,10 @@ public class EventContent {
 
     Main EventManagementController;
 
+
+
+
+
     public void initialize() {
         currentUser = CatERing.getInstance().getUserManager().getCurrentUser();
 
@@ -51,7 +66,55 @@ public class EventContent {
 
         emptyPane = new BorderPane();
         paneVisible = false;
+
+
+
+        setMenuLists();
+
+
+
+
     }
+
+
+    private void setMenuLists() {
+
+        SHList.clear();
+        ServicesList.clear();
+        SHList.put(toSelectString, -1);
+
+        SHMenuButton.setText(toSelectString);
+
+        String query1 = "SELECT * FROM summarysheet WHERE 1;";
+        PersistenceManager.executeQueryS(query1, rs -> {
+            MenuItem menuItem = new MenuItem( rs.getString("title") );
+            SHMenuButton.getItems().add(menuItem);
+
+            menuItem.setOnAction(event -> SHMenuButton.setText(menuItem.getText()));
+            SHList.put( menuItem.getText(), rs.getInt("ID") );
+
+            return null;
+        });
+
+
+
+        ServiceMenuButton.setText(toSelectString);
+
+        String query2 = "SELECT * FROM services WHERE 1;";
+        PersistenceManager.executeQueryS(query2, rs -> {
+            MenuItem menuItem = new MenuItem( rs.getString("name") );
+            ServiceMenuButton.getItems().add(menuItem);
+
+            menuItem.setOnAction(event -> ServiceMenuButton.setText(menuItem.getText()));
+            ServicesList.put( menuItem.getText(), rs.getInt("id"));
+
+            return null;
+        });
+
+
+
+    }
+
 
 
     @FXML
@@ -152,8 +215,6 @@ public class EventContent {
             DefinitionTaskBox.setPrefWidth(154);
             DefinitionTaskBox.setVisible(true);
 
-            System.out.println("newValue: " + newValue);
-
             if (newValue != null && newValue != oldValue) {
 
                 IDLabel.setText( "ID: " + newValue.getID() );
@@ -161,23 +222,31 @@ public class EventContent {
                 else NameTextField.setPromptText(newValue.getName());
 
 
+                // set test into "DefinitionTaskBox"
                 IDLabel.setText( String.valueOf( newValue.getID() ) );
-                try { ServiceIDTextField.setPromptText( String.valueOf( newValue.getService().getID() ) ); } catch (Exception e ) {}
+                try { ServiceMenuButton.setText( newValue.getService().getName() ); }
+                catch (Exception e) { ServiceMenuButton.setText( toSelectString ); }
                 PublicatedTextField.setPromptText( String.valueOf( newValue.isPublicated() ) );
                 TERTextField.setPromptText( String.valueOf( newValue.getTimeEventRepetition() ) );
-                try { SHTextField.setPromptText( String.valueOf( newValue.getSh().getID() ) );  } catch (Exception e ) {}
+                try { SHMenuButton.setText( newValue.getSh().getTitle() ); }
+                catch (Exception e) { SHMenuButton.setText( toSelectString ); }
                 DateTextField.setPromptText( String.valueOf( newValue.getDate() ) );
+                Start_HourTextField.setPromptText( String.valueOf( newValue.getTime_start() ) );
+                End_HourTextField.setPromptText( String.valueOf( newValue.getTime_end() ) );
                 DescriptionTextField.setPromptText( String.valueOf( newValue.getDescription() ) );
                 NameTextField.setPromptText( String.valueOf( newValue.getName() ) );
 
 
-                ServiceIDTextField.clear();
+                // Clear Text field into "DefinitionTaskBox"
                 PublicatedTextField.clear();
                 TERTextField.clear();
-                SHTextField.clear();
+                Start_HourTextField.clear();
+                End_HourTextField.clear();
                 DateTextField.clear();
                 DescriptionTextField.clear();
                 NameTextField.clear();
+                if (ServiceMenuButton.getText() == null) ServiceMenuButton.setText(toSelectString);
+                if (SHMenuButton.getText() == null) SHMenuButton.setText(toSelectString);
 
                 deleteButton.setDisable(false);
             } else if (newValue == null) {
@@ -192,43 +261,53 @@ public class EventContent {
     public void SaveTaskChanges() {
         String name = NameTextField.getPromptText();
         String id = IDLabel.getText();
-        String service = ServiceIDTextField.getPromptText();
+        String service = "";
         String publicated = PublicatedTextField.getPromptText();
         String TERT = TERTextField.getPromptText();
-        String SH = SHTextField.getPromptText();
+        String SH = "";
         String dt = DateTextField.getPromptText();
+        String hS = Start_HourTextField.getPromptText();
+        String hE = End_HourTextField.getPromptText();
         String description = DescriptionTextField.getPromptText();
 
         if (!NameTextField.getText().isEmpty()) name = NameTextField.getText();
-        if (!ServiceIDTextField.getText().isEmpty()) service = ServiceIDTextField.getText();
+        if (!ServiceMenuButton.getText().equals(toSelectString)) service = ServiceMenuButton.getText();
         if (!TERTextField.getText().isEmpty()) TERT = TERTextField.getText();
         if (!PublicatedTextField.getText().isEmpty() &&
                 (PublicatedTextField.getText().toLowerCase(Locale.ROOT).equals("false")
                         || PublicatedTextField.getText().toLowerCase(Locale.ROOT).equals("true")))
             publicated = PublicatedTextField.getText();
-
-        if (!SHTextField.getText().isEmpty()) SH = SHTextField.getText();
+        if (!Start_HourTextField.getText().isEmpty()) hS = Start_HourTextField.getText();
+        if (!End_HourTextField.getText().isEmpty()) hE = End_HourTextField.getText();
+        if (!SHMenuButton.getText().equals(toSelectString)) SH = SHMenuButton.getText();
         if (!DateTextField.getText().isEmpty()) dt = DateTextField.getText();
         if (!DescriptionTextField.getText().isEmpty()) description = DescriptionTextField.getText();
 
         try {
+            int serviceID = -1;
+            int SHID = -1;
+
             try {
                 // control input is integer
                 Integer.parseInt(String.valueOf(id));
-                if (SH != "") Integer.parseInt(String.valueOf(TERT));
-                if (SH != "") Integer.parseInt(String.valueOf(SH));
-                if (SH != "") Integer.parseInt(String.valueOf(service));
+                if (!TERT.equals("")) Integer.parseInt(TERT);
+                if (!service.equals("")) serviceID = ServicesList.get(service);
+                if (!SH.equals("")) SHID = SHList.get(SH);
+                if (!hS.equals("")) Integer.parseInt(hS);
+                if (!hE.equals("")) Integer.parseInt(hE);
             } catch ( Exception e ) { throw new EventThrowException(); }
 
 
             String query = "UPDATE event SET name=\"" + name + "\"" +
-                    ( service != "" ? ", service= " + service : "" ) +
+                    ( serviceID != -1 ? ", service= " + service : "" ) +
                     ", publicated= " + publicated +
-                    ( TERT != "" ? ", timeEventRepetition= " + TERT : "" ) +
+                    (!TERT.equals("") ? ", timeEventRepetition= " + TERT : "" ) +
                     ", publicated = " + publicated +
-                    ( SH != "" ? ", summarySheet= " + SH : "" ) +
+                    ( SHID != -1 ? ", summarySheet= " + SH : "" ) +
+                    (!hS.equals("") ? ", time_start= \"" + hS : "\"" ) +
+                    (!hE.equals("") ? ", time_end= \"" + hE : "\"" ) +
                     ", date= \"" + dt + "\"" +
-                    ( description != "" ? ", description= \"" + description + "\"" : "" ) +
+                    (!description.equals("") ? ", description= \"" + description + "\"" : "" ) +
                     " WHERE id= " + id;
 
             PersistenceManager.executeUpdate(query);

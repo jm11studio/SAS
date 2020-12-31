@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 
-public class ServiceInfo implements EventItemInfo {
+public class ServiceInfo {
     private int id;
     private String name;
     private Date date;

@@ -27,7 +27,7 @@ public class EventsInfoDialog {
             root.getChildren().add(node);
             ObservableList<ServiceInfo> serv = e.getServices();
             for (ServiceInfo s: serv) {
-                node.getChildren().add(new TreeItem<>(s));
+                node.getChildren().add(new TreeItem<EventItemInfo>((EventItemInfo) s));
             }
         }
 

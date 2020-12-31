@@ -7,10 +7,11 @@ import businesslogic.user.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import persistence.PersistenceManager;
-import persistence.ResultHandlerEvent;
+import persistence.ResultHandlerE;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.Date;
 
 public class Event {
@@ -18,6 +19,8 @@ public class Event {
     private String name;
     private String description;
     private java.util.Date date;
+    private Time time_start;
+    private Time time_end;
     private SummarySheet sh;
     private int timeEventRepetition;
     private boolean publicated;
@@ -34,20 +37,23 @@ public class Event {
         ObservableList<Event> eventList = FXCollections.observableArrayList();
         String query = "SELECT * FROM event WHERE 1;";
 
-        PersistenceManager.executeQueryE(query, new ResultHandlerEvent() {
+        PersistenceManager.executeQueryE(query, new ResultHandlerE() {
             @Override
             public Event handle(ResultSet rs) throws SQLException {
                 Event ev = new Event(rs.getString("name"), User.loadUserById(rs.getInt("user")) );
 
                 ev.setDescription(rs.getString("description"));
                 ev.setDate( rs.getDate("date") );
-                ev.setSH( SummarySheet.getByID(rs.getInt("summarySheet")) );
+                ev.setTime_start( rs.getTime("time_start") );
+                ev.setTime_end( rs.getTime("time_end") );
+
+                if (  rs.getInt("summarySheet") >= 1 ) ev.setSH( SummarySheet.getByID(rs.getInt("summarySheet")) );
+                else ev.setSH( null );
+
                 ev.setTimeEventRepetition( rs.getInt("timeEventRepetition") );
                 ev.setPublicatedState( rs.getBoolean("publicated") );
                 ev.setService( Service.getById(rs.getInt("service")) );
                 ev.setID( rs.getInt("id") );
-
-                System.out.println("description: " + rs.getString("description"));
 
                 eventList.add(ev);
 
@@ -55,8 +61,6 @@ public class Event {
                 return null;
             }
         });
-
-        System.out.println("eventList: " + eventList);
 
         return eventList;
     }
@@ -74,7 +78,7 @@ public class Event {
                     "user = " + CatERing.getInstance().getUserManager().getCurrentUser() + ";";
 
 
-            PersistenceManager.executeQueryE(query, new ResultHandlerEvent() {
+            PersistenceManager.executeQueryE(query, new ResultHandlerE() {
                 @Override
                 public Event handle(ResultSet rs) throws SQLException {
                     sID[0] = rs.getInt("id");
@@ -101,6 +105,12 @@ public class Event {
 
     public Date getDate() { return this.date; }
     public void setDate(Date date) { this.date = date; }
+
+    public Time getTime_start() { return time_start; }
+    public void setTime_start(Time time_start) { this.time_start = time_start; }
+
+    public Time getTime_end() { return time_end; }
+    public void setTime_end(Time time_end) { this.time_end = time_end; }
 
     public int getTimeEventRepetition() { return this.timeEventRepetition; }
     public void setTimeEventRepetition(int ter) { this.timeEventRepetition = ter; }

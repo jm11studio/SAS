@@ -89,7 +89,7 @@ public class Main {
     public void startEventManagement() {
         CatERing.getInstance().getUserManager().fakeLogin("Lidia");
 
-        EventManagementPaneController.initialize();
+//        EventManagementPaneController.initialize();
         paneContainer.getChildren().remove(startPane);
         paneContainer.getChildren().add(EventPane);
         AnchorPane.setTopAnchor(EventPane, 0.0);

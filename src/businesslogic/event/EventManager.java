@@ -5,7 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.w3c.dom.events.EventException;
 import persistence.PersistenceManager;
-import persistence.ResultHandlerEvent;
+import persistence.ResultHandlerE;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,14 +22,11 @@ public class EventManager {
     private static Map<String, Event> loadedEvent = FXCollections.observableHashMap();
 
 
-    public void initialize() {}
-
-
     public ObservableList<Event> getAllEvent() {
         ArrayList<Event> allEvent = new ArrayList<>();
         String query = "SELECT * FROM `event` WHERE 1";
 
-        PersistenceManager.executeQueryE(query, new ResultHandlerEvent() {
+        PersistenceManager.executeQueryE(query, new ResultHandlerE() {
             @Override
             public Event handle(ResultSet rs) throws SQLException {
 
@@ -83,8 +80,6 @@ public class EventManager {
     public Event createEvent(Event s, User u, String date) {
         String query = "INSERT INTO event ( name, date, user) " +
                 "VALUES ('" + s.getName() + "', \"" + date + "\", " + u.getId() + ");";
-
-        System.out.println("query: " + query);
 
         PersistenceManager.executeUpdate( query );
 
