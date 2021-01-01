@@ -42,12 +42,7 @@ public class SummarySheet {
         String query = "SELECT * FROM summarySheet Where ID="+sh+";";
         final SummarySheet[] smht = {null};
 
-        System.out.println("query: " + query);
-
         PersistenceManager.executeQuery(query, rs -> {
-
-            System.out.println("rs: " + rs.getString("title") + " - " + rs.getBoolean("public") );
-
             smht[0] = new SummarySheet(rs.getString("title"), User.loadUserById(rs.getInt("owner")));
             smht[0].setPublicatedState( rs.getBoolean("public") );
 

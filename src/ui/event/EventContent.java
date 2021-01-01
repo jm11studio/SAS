@@ -2,8 +2,8 @@ package ui.event;
 
 import businesslogic.CatERing;
 import businesslogic.event.Event;
+import businesslogic.event.EventHourThrowException;
 import businesslogic.event.EventThrowException;
-import businesslogic.service.Service;
 import businesslogic.user.User;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -16,15 +16,12 @@ import ui.Main;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class EventContent {
     public VBox DefinitionTaskBox;
     public Label IDLabel;
-    public Button SaveTaskChanges;
+    public Button SaveEventChanges;
     public TextField PublicatedTextField;
     public TextField TERTextField;
     public TextField DateTextField;
@@ -60,23 +57,22 @@ public class EventContent {
     public void initialize() {
         currentUser = CatERing.getInstance().getUserManager().getCurrentUser();
 
-        // richiamo a persistance. ottengo tutti gli eventi. Li metto in selectionList. In fine refresh con "refreshSelectionList"
+        // load all event
         sectionList.setItems(Event.getEventList());
         refreshSectionList();
 
         emptyPane = new BorderPane();
         paneVisible = false;
 
-
+        SaveEventChanges.setDisable(true);
 
         setMenuLists();
-
-
-
-
     }
 
 
+
+    // load values for SummarySheet and service in buttonList
+    // TODO: only if they are public
     private void setMenuLists() {
 
         SHList.clear();
@@ -85,7 +81,7 @@ public class EventContent {
 
         SHMenuButton.setText(toSelectString);
 
-        String query1 = "SELECT * FROM summarysheet WHERE 1;";
+        String query1 = "SELECT * FROM summarysheet WHERE public=1;";
         PersistenceManager.executeQueryS(query1, rs -> {
             MenuItem menuItem = new MenuItem( rs.getString("title") );
             SHMenuButton.getItems().add(menuItem);
@@ -110,9 +106,6 @@ public class EventContent {
 
             return null;
         });
-
-
-
     }
 
 
@@ -212,6 +205,8 @@ public class EventContent {
         sectionList.getSelectionModel().select(null);
         sectionList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
+            SaveEventChanges.setDisable(false);
+
             DefinitionTaskBox.setPrefWidth(154);
             DefinitionTaskBox.setVisible(true);
 
@@ -219,7 +214,6 @@ public class EventContent {
                 IDLabel.setText( "ID: " + newValue.getID() );
                 if ( newValue.getName().isEmpty() ) NameTextField.setPromptText("null");
                 else NameTextField.setPromptText(newValue.getName());
-
 
                 // set test into "DefinitionTaskBox"
                 IDLabel.setText( String.valueOf( newValue.getID() ) );
@@ -230,8 +224,12 @@ public class EventContent {
                 try { SHMenuButton.setText( newValue.getSh().getTitle() ); }
                 catch (Exception e) { SHMenuButton.setText( toSelectString ); }
                 DateTextField.setPromptText( String.valueOf( newValue.getDate() ) );
-                Start_HourTextField.setPromptText( String.valueOf( newValue.getTime_start() ) );
-                End_HourTextField.setPromptText( String.valueOf( newValue.getTime_end() ) );
+
+                if ( newValue.getTime_start() == null ) Start_HourTextField.setPromptText("null");
+                else Start_HourTextField.setPromptText(String.valueOf(Integer.parseInt( String.valueOf( newValue.getTime_start() ).split(":")[0] ) -1 ) );
+                if ( newValue.getTime_end() == null ) End_HourTextField.setPromptText("null");
+                else End_HourTextField.setPromptText(String.valueOf(Integer.parseInt(String.valueOf( newValue.getTime_end() ).split(":")[0] ) -1) );
+
                 DescriptionTextField.setPromptText( String.valueOf( newValue.getDescription() ) );
                 NameTextField.setPromptText( String.valueOf( newValue.getName() ) );
 
@@ -283,26 +281,30 @@ public class EventContent {
         try {
             int serviceID = -1;
             int SHID = -1;
+            if (!hS.equals("null") && !hE.equals("null") && Integer.parseInt(hS) >= Integer.parseInt(hE) )
+                throw new EventHourThrowException();
+
 
             try {
+
                 // control input is integer
                 Integer.parseInt(String.valueOf(id));
                 if (!TERT.equals("")) Integer.parseInt(TERT);
                 if (!service.equals("")) serviceID = ServicesList.get(service);
                 if (!SH.equals("")) SHID = SHList.get(SH);
-                if (!hS.equals("")) Integer.parseInt(hS);
-                if (!hE.equals("")) Integer.parseInt(hE);
+                if (!hS.equals("null")) Integer.parseInt(hS);
+                if (!hE.equals("null")) Integer.parseInt(hE);
+
             } catch ( Exception e ) { throw new EventThrowException(); }
 
-
             String query = "UPDATE event SET name=\"" + name + "\"" +
-                    ( serviceID != -1 ? ", service= " + service : "" ) +
+                    ( serviceID != -1 ? ", service= " + serviceID : "" ) +
                     ", publicated= " + publicated +
                     (!TERT.equals("") ? ", timeEventRepetition= " + TERT : "" ) +
                     ", publicated = " + publicated +
-                    ( SHID != -1 ? ", summarySheet= " + SH : "" ) +
-                    (!hS.equals("") ? ", time_start= \"" + hS : "\"" ) +
-                    (!hE.equals("") ? ", time_end= \"" + hE : "\"" ) +
+                    ( SHID != -1 ? ", summarySheet= " + SHID : "" ) +
+                    (!hS.equals("null") ? ", time_start= \"" + hS + ":00:00\"": "" ) +
+                    (!hE.equals("null") ? ", time_end= \"" + hE + ":00:00\"" : "" ) +
                     ", date= \"" + dt + "\"" +
                     (!description.equals("") ? ", description= \"" + description + "\"" : "" ) +
                     " WHERE id= " + id;
@@ -314,8 +316,15 @@ public class EventContent {
         } catch (EventThrowException e) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);// line 1
             alert.setTitle("ERROR reporting Box");// line 2
-            alert.setHeaderText("Un capo della definizione dell'evento è errata.");
+            alert.setHeaderText("Un capo o più della definizione dell'evento è errata.");
             alert.setContentText("Controlla il tipo di dati e la virgola. Poi tenta di nuovo.");
+
+            alert.showAndWait();
+        } catch (EventHourThrowException e1) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);// line 1
+            alert.setTitle("ERROR reporting Box");// line 2
+            alert.setHeaderText("Un capo o più della definizione dell'evento è errata.");
+            alert.setContentText("L'ora di inizio deve essere antecedente e diversa da quella di fine evento.");
 
             alert.showAndWait();
         }

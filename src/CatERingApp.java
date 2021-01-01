@@ -19,8 +19,6 @@ public class CatERingApp extends Application {
             primaryStage.setTitle("Cat&Ring");
             primaryStage.setScene(new Scene(root, 1080, 720));
             primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 }

@@ -120,7 +120,7 @@
                </children>
             </HBox>
             <HBox prefHeight="13.0" prefWidth="253.0" />
-            <Button fx:id="SaveTaskChanges" alignment="BOTTOM_CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#SaveTaskChanges" prefHeight="25.0" prefWidth="208.0" text="Save" />
+            <Button fx:id="SaveEventChanges" alignment="BOTTOM_CENTER" contentDisplay="BOTTOM" mnemonicParsing="false" onAction="#SaveTaskChanges" prefHeight="25.0" prefWidth="208.0" text="Save" />
          </children>
       </VBox>
    </center>
