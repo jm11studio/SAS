@@ -73,8 +73,6 @@ public class KitchenManager {
         String query = "DELETE FROM `summarysheet` WHERE ID= " + sh.setID();
         PersistenceManager.executeUpdate(query);
 
-
-        // TODO delete all task connected to sh
         String queryDeleteTasks = "DELETE FROM task WHERE SHid= " +sh.getID();
         PersistenceManager.executeUpdate(queryDeleteTasks);
     }

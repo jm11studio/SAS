@@ -72,7 +72,6 @@ public class EventContent {
 
 
     // load values for SummarySheet and service in buttonList
-    // TODO: only if they are public
     private void setMenuLists() {
 
         SHList.clear();

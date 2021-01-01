@@ -9,12 +9,8 @@ public class KitchenPersistance implements KitchenEventReciver {
     public static void executeQuery(String query, ResultHandler name) {
     }
 
-
-    // TODO: connessione al database
-
     @Override
     public void notifySummarySheetAdd(SummarySheet sh) {
-
     }
 
     @Override

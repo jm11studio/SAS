@@ -66,9 +66,7 @@ public class Task {
     }
 
     public boolean setShiftID(int shiftID) {
-
         if (shiftID < 0 ) return false;
-        // TODO: Decrease shift place of one unit. If false return
 
         this.id = shiftID;
         return true;

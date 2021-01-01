@@ -1,7 +1,6 @@
 package ui.kitchen;
 
 import businesslogic.CatERing;
-// TODO
 import businesslogic.menu.Section;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

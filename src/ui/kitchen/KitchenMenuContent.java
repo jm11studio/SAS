@@ -230,7 +230,6 @@ public class KitchenMenuContent {
                 DefinitionTaskBox.setVisible(true);
 
 
-
                 if (newValue != null && newValue != oldValue) {
 
                     // TODO: Fare in modo che sia cancellabile e tutto il resto
